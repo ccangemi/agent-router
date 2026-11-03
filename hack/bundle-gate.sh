@@ -74,6 +74,10 @@ check "the CRD of $CR_KIND allows only the name $CR_NAME" \
   env R="self.metadata.name == '$CR_NAME'" "$YQ" ea -N -e \
   "[$CRDS | select(.spec.group == \"$CR_GROUP\") | .spec.versions[].schema.openAPIV3Schema.x-kubernetes-validations[] | select(.rule == strenv(R))] | length > 0" \
   "$MANIFESTS"/*.yaml
+check "the CRD of $CR_KIND never sends empty values to Helm (ai-gateway-helm defaults to {})" \
+  env K="ai-gateway-helm" "$YQ" ea -N -e \
+  "[$CRDS | select(.spec.group == \"$CR_GROUP\") | .spec.versions[].schema.openAPIV3Schema.properties.spec.properties[strenv(K)].default | select(tag == \"!!map\") | select(length == 0)] | length > 0" \
+  "$MANIFESTS"/*.yaml
 
 # --- Forbidden objects -------------------------------------------------------
 FORBIDDEN='select(.kind | test("^(Namespace|ValidatingAdmissionPolicy|ValidatingAdmissionPolicyBinding|MutatingWebhookConfiguration|ValidatingWebhookConfiguration|SecurityContextConstraints)$"))'
