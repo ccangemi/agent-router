@@ -1,6 +1,6 @@
 apiVersion: v2
 name: agent-router
-description: "The chart of agent-router-operator: the upstream Agent Router chart (charts/ai-gateway-helm, unchanged) with the values for OpenShift."
+description: "The chart of agent-router-operator: the upstream chart (charts/ai-gateway-helm, unchanged) with values for OpenShift."
 type: application
 # The operator version (versions.env). hack/update-upstream.sh keeps it, the
 # appVersion and the dependency version in step with versions.env.
