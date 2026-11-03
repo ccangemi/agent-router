@@ -25,4 +25,3 @@ resources:
 - agentrouter_admin_role.yaml
 - agentrouter_editor_role.yaml
 - agentrouter_viewer_role.yaml
-
