@@ -1,8 +1,16 @@
 # The custom resource that the operator watches, and the chart that it
-# installs for each resource. helm-charts/ai-gateway-helm is the upstream
-# chart, unchanged.
+# installs for each resource. The spec of the resource holds the values of the
+# chart. helm-charts/agent-router sets the values that OpenShift needs and
+# contains the upstream chart, unchanged, in charts/ai-gateway-helm.
 - group: agentrouter.ccangemi.github.io
   version: v1alpha1
   kind: AgentRouter
-  chart: helm-charts/ai-gateway-helm
+  chart: helm-charts/agent-router
+  # The operator compares the installed release with a dry run of an upgrade.
+  # The upstream chart reuses objects that exist (Helm lookup): the MCP session
+  # seed, and without cert-manager the webhook certificate. In the "server"
+  # mode the dry run reads the cluster too. In the default mode the dry run
+  # would generate new values each time, and the operator would upgrade the
+  # release at every reconcile.
+  dryRunOption: server
 # +kubebuilder:scaffold:watch
