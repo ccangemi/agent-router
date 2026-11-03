@@ -4,7 +4,8 @@
 #   KUBECONFIG=<file> hack/e2e/ocp.sh <command>
 #
 # Commands:
-#   prereq     check cert-manager and Envoy Gateway (with the Agent Router extension settings)
+#   prereq     check cert-manager and Envoy Gateway (Agent Router extension settings,
+#              Gateway Namespace Mode)
 #   install    install the operator through OLM (OwnNamespace) and wait until it is ready
 #   cr         create the AgentRouter resource and wait until the release is deployed
 #   verify     check the release, the webhook certificate, the pods, the OpenShift Gateway API
@@ -20,6 +21,7 @@
 #   CR_FILE        the AgentRouter resource (default: the sample of config/samples)
 #   EG_NAMESPACE   the namespace of Envoy Gateway (default envoy-gateway-system)
 #   STABILITY_SECONDS  how long verify watches the release revision (default 200)
+#   SNAPSHOT_FILE  the snapshot of the Gateway API CRDs (default: build/, one per cluster)
 #
 # Install Envoy Gateway first, for example with the Envoy Gateway operator and
 # its samples/ocp/envoygateway-with-agent-router.yaml. The script never logs
@@ -30,11 +32,16 @@ source "$(dirname "$0")/lib.sh"
 require_tools YQ
 
 EG_NAMESPACE=${EG_NAMESPACE:-envoy-gateway-system}
-SNAPSHOT_FILE=${SNAPSHOT_FILE:-$ROOT_DIR/build/gateway-api-snapshot.tsv}
 
 # --- Prerequisites ----------------------------------------------------------------
 cert_manager_api() { k get crd certificates.cert-manager.io issuers.cert-manager.io; }
 cert_manager_ready() { [[ $(k get deployment -n cert-manager -o jsonpath='{.items[*].status.availableReplicas}' | wc -w) -ge 3 ]]; }
+# The examples of samples/ocp/test need the Gateway Namespace Mode: the proxy
+# runs in the namespace of the Gateway, with a service account named like it.
+eg_gateway_namespace_mode() {
+  k get configmap envoy-gateway-config -n "$EG_NAMESPACE" -o jsonpath='{.data.envoy-gateway\.yaml}' \
+    | "$YQ" -e '.provider.kubernetes.deploy.type == "GatewayNamespace"'
+}
 eg_points_here() {
   k get configmap envoy-gateway-config -n "$EG_NAMESPACE" -o jsonpath='{.data.envoy-gateway\.yaml}' \
     | "$YQ" -e ".extensionManager.service.fqdn.hostname == \"ai-gateway-controller.$NS.svc.cluster.local\""
@@ -44,13 +51,16 @@ cmd_prereq() {
   expect "cert-manager runs (controller, webhook, cainjector)" cert_manager_ready
   expect "Envoy Gateway runs in $EG_NAMESPACE" deployment_available envoy-gateway "$EG_NAMESPACE"
   expect "the Envoy Gateway extension manager points to the Agent Router in $NS" eg_points_here
+  expect "Envoy Gateway uses the Gateway Namespace Mode (the test examples need it)" eg_gateway_namespace_mode
 }
 
 cmd_install() {
-  mkdir -p "$(dirname "$SNAPSHOT_FILE")"
-  if [[ ! -s $SNAPSHOT_FILE ]]; then
-    gateway_api_snapshot >"$SNAPSHOT_FILE"
-    log "saved a snapshot of the Gateway API CRDs in ${SNAPSHOT_FILE#"$ROOT_DIR"/}"
+  local snapshot
+  snapshot=$(snapshot_file)
+  mkdir -p "$(dirname "$snapshot")"
+  if [[ ! -s $snapshot ]]; then
+    gateway_api_snapshot >"$snapshot"
+    log "saved a snapshot of the Gateway API CRDs in ${snapshot#"$ROOT_DIR"/}"
   fi
   install_operator
 }
@@ -75,6 +85,8 @@ webhook_ca_matches() {
 mcp_seed() { k get secret ai-gateway-controller-mcp-session-encryption -n "$NS" -o jsonpath='{.data.seed}'; }
 
 cmd_verify() {
+  local snapshot
+  snapshot=$(snapshot_file)
   log "checking the release"
   expect "$CR_KIND $CR_NAME is Deployed" cr_deployed
   expect "deployment ai-gateway-controller is available" deployment_available ai-gateway-controller
@@ -87,9 +99,9 @@ cmd_verify() {
   k get pods -n "$NS" -o custom-columns='NAME:.metadata.name,STATUS:.status.phase,RESTARTS:.status.containerStatuses[*].restartCount,SCC:.metadata.annotations.openshift\.io/scc' || true
 
   log "checking the OpenShift Gateway API"
-  if [[ -s $SNAPSHOT_FILE ]]; then
+  if [[ -s $snapshot ]]; then
     expect "the Gateway API CRDs did not change (name, uid, generation, bundle version)" \
-      diff "$SNAPSHOT_FILE" <(gateway_api_snapshot)
+      diff "$snapshot" <(gateway_api_snapshot)
   else
     fail_check "no snapshot of the Gateway API CRDs; run the install command first"
   fi
@@ -141,6 +153,8 @@ chat_ok() {
 }
 
 cmd_test() {
+  local snapshot
+  snapshot=$(snapshot_file)
   log "running the functional test in namespace $TEST_NS"
   local f
   for f in "$ROOT_DIR"/samples/ocp/test/*.yaml; do
@@ -160,12 +174,14 @@ cmd_test() {
     sed 's/^/    /' "$CHAT_OUTPUT"
   fi
   rm -f "$CHAT_OUTPUT"
-  if [[ -s $SNAPSHOT_FILE ]]; then
-    expect "the Gateway API CRDs did not change after the test" diff "$SNAPSHOT_FILE" <(gateway_api_snapshot)
+  if [[ -s $snapshot ]]; then
+    expect "the Gateway API CRDs did not change after the test" diff "$snapshot" <(gateway_api_snapshot)
   fi
 }
 
 cmd_uninstall() {
+  local snapshot
+  snapshot=$(snapshot_file)
   log "deleting the examples"
   local f
   for f in $(find "$ROOT_DIR/samples/ocp/test" -name '*.yaml' | sort -r); do
@@ -181,8 +197,10 @@ cmd_uninstall() {
   k delete subscription "$PACKAGE_NAME" -n "$NS" --ignore-not-found >/dev/null
   k delete csv "$CSV_NAME" -n "$NS" --ignore-not-found >/dev/null
   k delete catalogsource "$PACKAGE_NAME-test" -n "$NS" --ignore-not-found >/dev/null
-  if [[ -s $SNAPSHOT_FILE ]]; then
-    expect "the Gateway API CRDs did not change after uninstall" diff "$SNAPSHOT_FILE" <(gateway_api_snapshot)
+  if [[ -s $snapshot ]]; then
+    expect "the Gateway API CRDs did not change after uninstall" diff "$snapshot" <(gateway_api_snapshot)
+    # The next installation takes a new snapshot.
+    rm -f "$snapshot"
   fi
   log "left on the cluster on purpose: the CRDs (OLM never deletes CRDs) and the namespace $NS"
 }
@@ -195,6 +213,6 @@ case ${1:-} in
   test) cmd_test ;;
   uninstall) cmd_uninstall ;;
   all) cmd_prereq && [[ $e2e_errors -eq 0 ]] && cmd_install && cmd_cr && cmd_verify && cmd_test ;;
-  *) sed -n '2,29p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
+  *) sed -n '2,28p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
 esac
 finish

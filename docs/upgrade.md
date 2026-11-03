@@ -73,9 +73,8 @@ pods can be refused, so do it when no proxy is in a rollout.
 
 ### Turn cert-manager off
 
-Helm cannot take over the secret that cert-manager created, and the upgrade
-fails with `invalid ownership metadata`. Delete the `Certificate` and its
-secret first, then change the value:
+Helm cannot take over the secret that cert-manager created. Follow these steps
+in this order, when no Envoy proxy is in a rollout:
 
 ```console
 $ NS=envoy-ai-gateway-system
@@ -85,5 +84,15 @@ $ oc -n $NS delete certificate self-signed-cert-for-mutating-webhook
 $ oc -n $NS delete secret self-signed-cert-for-mutating-webhook
 ```
 
-The operator then completes the upgrade with a generated certificate. Until
-then, new Envoy proxy pods can be refused.
+1. The change of the value comes first. The upgrade stops with
+   `invalid ownership metadata` for the secret, and the operator reports the
+   condition `Irreconcilable`. It does not touch the release, so it does not
+   create the `Certificate` again.
+2. Delete the `Certificate` before its secret: while the `Certificate`
+   exists, cert-manager writes the secret again at once.
+3. When the secret is gone, the operator completes the upgrade with a
+   generated certificate, within a minute.
+
+If you delete the `Certificate` before you change the value, the operator
+creates it again from the release, and cert-manager writes the secret again.
+Between step 1 and step 3, new Envoy proxy pods can be refused.

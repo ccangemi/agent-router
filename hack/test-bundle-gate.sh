@@ -71,8 +71,10 @@ expect_fail "no Agent Router CRDs" "the bundle has Agent Router CRDs" sh -c 'rm 
 expect_fail "no CRD of the custom resource" "the bundle has the CRD of" rm "bundle/$CRD_FILE"
 expect_fail "custom resource name not enforced" "allows only the name" \
   yqi 'del(.spec.versions[].schema.openAPIV3Schema.x-kubernetes-validations)' "bundle/$CRD_FILE"
-expect_fail "empty values possible" "never sends empty values to Helm" \
+expect_fail "empty subchart values possible" "never sends empty values to Helm" \
   yqi 'del(.spec.versions[].schema.openAPIV3Schema.properties.spec.properties)' "bundle/$CRD_FILE"
+expect_fail "empty spec possible" "never sends empty values to Helm" \
+  yqi 'del(.spec.versions[].schema.openAPIV3Schema.properties.spec.default)' "bundle/$CRD_FILE"
 # Forbidden objects
 expect_fail "Namespace object" "no Namespace, admission policy" add_namespace
 expect_fail "OLM webhook" "the CSV defines no OLM webhooks" \
@@ -101,9 +103,9 @@ expect_fail "fixed group ID" "no fixed runAsUser" values_edit 'del(."ai-gateway-
 expect_fail "no cert-manager check" "stops with a clear message" rm chart/templates/validate.yaml
 expect_fail "chart version" "the chart versions match versions.env" yqi '.version = "9.9.9"' chart/Chart.yaml
 expect_fail "dependency version" "the chart versions match versions.env" yqi '.dependencies[0].version = "v0.0.1"' chart/Chart.yaml
-expect_fail "chart image by tag" "the images of the chart are pinned" \
+expect_fail "chart image by tag" "every image of the rendered chart is pinned" \
   values_edit '."ai-gateway-helm".controller.image.tag = "v1.2.0"'
-expect_fail "chart image not related" "the images of the chart are pinned" \
+expect_fail "chart image not related" "every image of the rendered chart is pinned" \
   values_edit '."ai-gateway-helm".extProc.image.repository = "docker.io/x/y"'
 # Images
 expect_fail "related images differ" "relatedImages lists the images" \

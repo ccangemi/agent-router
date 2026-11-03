@@ -144,7 +144,16 @@ renewal and for a change between the two modes.
 
 Create a GatewayClass for Envoy Gateway, a Gateway, an `AIServiceBackend` and
 an `AIGatewayRoute`. The Envoy proxy of the Gateway needs the `nonroot-v2` SCC
-(see the documentation of the Envoy Gateway operator). The directory
+(see the documentation of the Envoy Gateway operator). Where the proxy runs,
+and the name of its service account, depend on the deployment mode of Envoy
+Gateway:
+
+* Gateway Namespace Mode: in the namespace of the Gateway, with a service
+  account named like the Gateway. Bind that service account.
+* ControllerNamespace mode (the upstream default): in the Envoy Gateway
+  namespace, with generated names. Bind the group
+  `system:serviceaccounts:envoy-gateway-system` there.
+ The directory
 [samples/ocp/test](../samples/ocp/test) has a complete example, with a test
 backend that answers chat completions.
 
