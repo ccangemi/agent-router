@@ -1,0 +1,16 @@
+agent-router-operator
+Copyright The agent-router-operator Authors
+
+This project packages software from other projects. It does not change their
+source code.
+
+- The Agent Router, formerly Envoy AI Gateway
+  (https://github.com/theagentrouter/agent-router)
+  Copyright Envoy AI Gateway Authors. Licensed under the Apache License 2.0.
+  The directory helm-charts/agent-router/charts/ai-gateway-helm is the
+  upstream Helm chart, unchanged.
+- Operator SDK helm-operator (https://github.com/operator-framework/operator-sdk)
+  Copyright The Operator-SDK Authors. Licensed under the Apache License 2.0.
+
+This is a community project. It is not affiliated with, or endorsed by, the
+Envoy project or the Cloud Native Computing Foundation.

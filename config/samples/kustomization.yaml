@@ -1,0 +1,4 @@
+## Append samples of your project ##
+resources:
+- agentrouter_v1alpha1_agentrouter.yaml
+# +kubebuilder:scaffold:manifestskustomizesamples
