@@ -1,0 +1,15 @@
+{{- /*
+Renders nothing. It refuses values that cannot work, with a clear message
+instead of an error from the cluster. The operator reports the message in the
+status of the AgentRouter resource.
+*/ -}}
+{{- $ar := index .Values "ai-gateway-helm" }}
+
+{{- /* cert-manager must be installed when the webhook certificate comes from it. */}}
+{{- if dig "controller" "mutatingWebhook" "certManager" "enable" false $ar }}
+{{- range list "cert-manager.io/v1/Certificate" "cert-manager.io/v1/Issuer" }}
+{{- if not ($.Capabilities.APIVersions.Has .) }}
+{{- fail (printf "the cluster does not serve %s. Install the cert-manager Operator for Red Hat OpenShift first, or set ai-gateway-helm.controller.mutatingWebhook.certManager.enable=false and renew the webhook certificate yourself." .) }}
+{{- end }}
+{{- end }}
+{{- end }}

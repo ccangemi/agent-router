@@ -1,0 +1,43 @@
+# Values of the operator chart. The operator merges the spec of the
+# AgentRouter resource on top of these values.
+#
+# The upstream chart is a subchart, so its values go under "ai-gateway-helm".
+# For example, to run two replicas of the controller:
+#
+#   spec:
+#     ai-gateway-helm:
+#       controller:
+#         replicaCount: 2
+#
+# The values below differ from the upstream defaults, so that the Agent Router
+# works on OpenShift. templates/validate.yaml refuses the values that cannot
+# work. docs/openshift.md explains each of them.
+ai-gateway-helm:
+  controller:
+    # The images, pinned by digest. hack/update-upstream.sh writes them, and
+    # config/manifests/related-images.yaml lists the same images. To use a
+    # mirror registry, prefer an ImageDigestMirrorSet.
+    image:
+      repository: docker.io/envoyproxy/ai-gateway-controller
+      tag: v1.2.0@sha256:4d663346354321a677c4e942017277f690d0d7715f8e3348a535db174679e4f8
+    # The restricted-v2 SCC does not allow the fixed user and group ID 65532
+    # of the upstream chart. Without them (null removes an upstream default),
+    # OpenShift assigns IDs from the namespace range.
+    podSecurityContext:
+      runAsUser: null
+      runAsGroup: null
+    securityContext:
+      runAsUser: null
+      runAsGroup: null
+    mutatingWebhook:
+      # cert-manager issues and renews the certificate of the pod webhook, and
+      # injects its CA into the webhook configuration. Without cert-manager the
+      # chart generates a certificate that expires after 365 days and that
+      # nobody renews. Set it to false only if you renew that certificate
+      # yourself (docs/openshift.md).
+      certManager:
+        enable: true
+  extProc:
+    image:
+      repository: docker.io/envoyproxy/ai-gateway-extproc
+      tag: v1.2.0@sha256:4af909a6f64ee6b97968995fec88c4fd3c41d020c6bcb7ca07136fdfffaa598c

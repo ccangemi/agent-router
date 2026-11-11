@@ -1,0 +1,18 @@
+apiVersion: v2
+name: agent-router
+description: "The chart of agent-router-operator: the upstream chart (charts/ai-gateway-helm, unchanged) with values for OpenShift."
+type: application
+# The operator version (versions.env). hack/update-upstream.sh keeps it, the
+# appVersion and the dependency version in step with versions.env.
+version: 0.1.0
+appVersion: v1.2.0
+home: https://github.com/ccangemi/agent-router
+sources:
+  - https://github.com/ccangemi/agent-router
+  - https://github.com/theagentrouter/agent-router
+dependencies:
+  # The upstream chart, vendored in charts/ by hack/update-upstream.sh and
+  # never changed by hand (hack/chart-check.sh checks it).
+  - name: ai-gateway-helm
+    version: v1.2.0
+    repository: ""

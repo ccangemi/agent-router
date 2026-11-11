@@ -1,0 +1,168 @@
+# Base of the ClusterServiceVersion. `operator-sdk generate bundle` adds the
+# install strategy, the owned CRDs and the examples. hack/generate-bundle.sh
+# then adds the version, the related images and the icon.
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  name: agent-router-operator.v0.0.0
+  namespace: placeholder
+  annotations:
+    alm-examples: "[]"
+    capabilities: Basic Install
+    categories: Networking,AI/Machine Learning
+    description: >-
+      Installs The Agent Router (formerly Envoy AI Gateway) on OpenShift with
+      its upstream Helm chart. It adds AI traffic features to Envoy Gateway.
+    repository: https://github.com/ccangemi/agent-router
+    support: Community
+    operatorframework.io/suggested-namespace: envoy-ai-gateway-system
+    operatorframework.io/initialization-resource: |-
+      {"apiVersion": "agentrouter.ccangemi.github.io/v1alpha1", "kind": "AgentRouter",
+       "metadata": {"name": "agent-router"}, "spec": {}}
+    features.operators.openshift.io/disconnected: "true"
+    features.operators.openshift.io/fips-compliant: "false"
+    features.operators.openshift.io/proxy-aware: "false"
+    features.operators.openshift.io/tls-profiles: "false"
+    features.operators.openshift.io/token-auth-aws: "false"
+    features.operators.openshift.io/token-auth-azure: "false"
+    features.operators.openshift.io/token-auth-gcp: "false"
+    features.operators.openshift.io/cnf: "false"
+    features.operators.openshift.io/cni: "false"
+    features.operators.openshift.io/csi: "false"
+  labels:
+    operatorframework.io/arch.amd64: supported
+    operatorframework.io/arch.arm64: supported
+    operatorframework.io/os.linux: supported
+spec:
+  displayName: The Agent Router (Community)
+  provider:
+    name: agent-router-operator community
+    url: https://github.com/ccangemi/agent-router
+  maintainers:
+    - name: Amedeo Salvati
+      email: asalvati@redhat.com
+  maturity: alpha
+  minKubeVersion: 1.35.0
+  keywords:
+    - agent-router
+    - ai-gateway
+    - envoy
+    - envoy-gateway
+    - gateway-api
+    - llm
+    - mcp
+  links:
+    - name: Operator source code
+      url: https://github.com/ccangemi/agent-router
+    - name: The Agent Router
+      url: https://github.com/theagentrouter/agent-router
+    - name: Envoy Gateway
+      url: https://gateway.envoyproxy.io/
+  installModes:
+    - type: OwnNamespace
+      supported: true
+    - type: SingleNamespace
+      supported: false
+    - type: MultiNamespace
+      supported: false
+    - type: AllNamespaces
+      supported: false
+  # The Gateway API comes from OpenShift, not from OLM. OLM refuses to install
+  # the operator when the cluster does not serve these APIs. BackendTLSPolicy v1
+  # arrives with Gateway API v1.4, which OpenShift 4.22 provides.
+  nativeAPIs:
+    - group: gateway.networking.k8s.io
+      version: v1
+      kind: GatewayClass
+    - group: gateway.networking.k8s.io
+      version: v1
+      kind: Gateway
+    - group: gateway.networking.k8s.io
+      version: v1
+      kind: HTTPRoute
+    - group: gateway.networking.k8s.io
+      version: v1
+      kind: BackendTLSPolicy
+  customresourcedefinitions:
+    owned:
+      - name: agentrouters.agentrouter.ccangemi.github.io
+        version: v1alpha1
+        kind: AgentRouter
+        displayName: Agent Router
+        description: >-
+          An installation of the Agent Router controller. The spec holds the
+          values of the upstream ai-gateway-helm chart.
+  install:
+    strategy: deployment
+    spec:
+      deployments: null
+  description: |
+    This community operator installs
+    [The Agent Router](https://github.com/theagentrouter/agent-router)
+    __CHART_VERSION__ (formerly Envoy AI Gateway) on OpenShift. The Agent
+    Router adds AI traffic features to Envoy Gateway: routing to LLM
+    providers, token based rate limits, provider fallback and MCP routing.
+
+    The operator is a Helm operator: it installs the upstream
+    `ai-gateway-helm` chart, unchanged. The spec of the `AgentRouter`
+    resource holds the values of the chart, under the key `ai-gateway-helm`.
+
+    ## Before you install
+
+    * OpenShift 4.22 or later (Gateway API v1.4).
+    * The cert-manager Operator for Red Hat OpenShift. cert-manager issues
+      and renews the certificate of the Agent Router webhook. You can turn
+      this off; the operator documentation explains what you must do then.
+    * Envoy Gateway, for example from the Envoy Gateway (Community)
+      operator, with the extension settings for the Agent Router. The
+      operator documentation has a complete example.
+    * Create the namespace `envoy-ai-gateway-system`, and install the
+      operator there with the "A specific namespace on the cluster" install
+      mode.
+
+    ## Install the Agent Router
+
+    Create one `AgentRouter` resource, named `agent-router`, in the namespace
+    of the operator:
+
+    ```yaml
+    apiVersion: agentrouter.ccangemi.github.io/v1alpha1
+    kind: AgentRouter
+    metadata:
+      name: agent-router
+      namespace: envoy-ai-gateway-system
+    spec: {}
+    ```
+
+    The operator then installs:
+
+    * the Agent Router controller, in the same namespace;
+    * a mutating webhook that adds the external processor to the Envoy proxy
+      pods (the pods with the label
+      `app.kubernetes.io/managed-by: envoy-gateway`). cert-manager issues its
+      certificate.
+
+    The Agent Router CRDs (`aigateway.envoyproxy.io`) come with the
+    operator. OLM installs and upgrades them.
+
+    By default the controller expects Envoy Gateway in the namespace
+    `envoy-gateway-system`. Set `ai-gateway-helm.envoyGateway.namespace` if
+    it runs somewhere else.
+
+    ## OpenShift notes
+
+    * The controller runs with the `restricted-v2` security context
+      constraint: the operator removes the fixed user ID of the upstream
+      chart.
+    * The operator does not install the Gateway API Inference Extension CRDs
+      (`InferencePool`). OpenShift AI provides them. The controller works
+      without them.
+
+    ## Documentation
+
+    See the [operator repository](https://github.com/ccangemi/agent-router)
+    for the installation guide, the upgrade notes and the troubleshooting
+    guide.
+
+    This is a community project. It is not affiliated with, or endorsed by,
+    the Envoy project.
