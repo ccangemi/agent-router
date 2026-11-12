@@ -118,7 +118,7 @@ spec:
 
     ## Before you install
 
-    * OpenShift 4.22 or later (Gateway API v1.4).
+    * OpenShift 4.22, the only supported version (Gateway API v1.4).
     * The cert-manager Operator for Red Hat OpenShift. cert-manager issues
       and renews the certificate of the Agent Router webhook. You can turn
       this off; the operator documentation explains what you must do then.
