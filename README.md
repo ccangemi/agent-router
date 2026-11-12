@@ -19,10 +19,10 @@ Agent Router webhook.
 
 | Component | Version |
 |---|---|
-| Operator | 0.1.0 (channel `alpha`) |
+| Operator | 0.1.1 (channel `alpha`) |
 | The Agent Router | v1.2.0 |
 | Envoy Gateway (installed separately) | v1.9, with the extension settings for the Agent Router |
-| OpenShift | 4.22 or later (Gateway API v1.4.1) |
+| OpenShift | 4.22 only (Gateway API v1.4.1) |
 | helm-operator (Operator SDK) | v1.42.3 |
 
 The file [versions.env](versions.env) defines these versions.

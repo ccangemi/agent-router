@@ -76,7 +76,7 @@ spec:
           # Approve only the versions that you have tested.
           upgradeApproval: Automatic
           versions:
-            - agent-router-operator.v0.1.0
+            - agent-router-operator.v0.1.1
     - extraDependencies:
         - apiVersion: policy.open-cluster-management.io/v1beta1
           kind: OperatorPolicy

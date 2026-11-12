@@ -34,12 +34,12 @@ metadata:
     operators.operatorframework.io/project_layout: helm.sdk.operatorframework.io/v1
     repository: https://github.com/ccangemi/agent-router
     support: Community
-    containerImage: quay.io/gateway-operators/agent-router-operator:v0.1.0
+    containerImage: quay.io/gateway-operators/agent-router-operator:v0.1.1
   labels:
     operatorframework.io/arch.amd64: supported
     operatorframework.io/arch.arm64: supported
     operatorframework.io/os.linux: supported
-  name: agent-router-operator.v0.1.0
+  name: agent-router-operator.v0.1.1
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -118,7 +118,7 @@ spec:
 
     ## Before you install
 
-    * OpenShift 4.22 or later (Gateway API v1.4).
+    * OpenShift 4.22, the only supported version (Gateway API v1.4).
     * The cert-manager Operator for Red Hat OpenShift. cert-manager issues
       and renews the certificate of the Agent Router webhook. You can turn
       this off; the operator documentation explains what you must do then.
@@ -403,7 +403,7 @@ spec:
                         valueFrom:
                           fieldRef:
                             fieldPath: metadata.annotations['olm.targetNamespaces']
-                    image: quay.io/gateway-operators/agent-router-operator:v0.1.0
+                    image: quay.io/gateway-operators/agent-router-operator:v0.1.1
                     livenessProbe:
                       httpGet:
                         path: /healthz
@@ -515,13 +515,13 @@ spec:
   provider:
     name: agent-router-operator community
     url: https://github.com/ccangemi/agent-router
-  version: 0.1.0
+  version: 0.1.1
   icon:
     - base64data: PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHJvbGU9ImltZyIgdmlld0JveD0iLTQuMjEgNDkuNTQgNDM5LjkyIDMzMi42NyI+PHN0eWxlPnN2ZyB7ZW5hYmxlLWJhY2tncm91bmQ6bmV3IDAgMCA0MzIgNDMyfTwvc3R5bGU+PHBhdGggZmlsbD0iI2IzMWFhYiIgZD0iTTEwOS44IDIxMC42bC42IDI1LjQgMjYuOCAxNi42LS42LTI1LjR6bTY1LjQgMTA1LjhsLS42LTI0LjktMjMuNS0xNC42Yy0uMy0uMi0uNy0uNS0xLS43bC42IDI1IDI0LjUgMTUuMnpNOTEuNSAzNTBsLTYxLjMtMzgtMS41LTYzLjcgMzAuMS0xMy0uNi0yNS41LTQ4IDIwLjdjLTMuNyAxLjYtNS45IDUtNS44IDguOWwxLjggNzYuNWMuMSAzLjkgMi41IDcuOCA2LjMgMTAuMkw4NiAzNzEuN2MzLjQgMi4xIDcuNiAyLjcgMTEgMS42LjQtLjEuNy0uMiAxLS40bDQ1LjEtMTkuNC0yNC41LTE1LjJMOTEuNSAzNTB6Ii8+PHBhdGggZmlsbD0iI2QxNjNjZSIgZD0iTTI4OS42IDIwOS4xYy0uMS00LjYtMi45LTkuMS03LjMtMTEuOUwxOTMgMTQxLjlsLTIuOCAxLjIuNiAyNi44IDcwLjcgNDMuOCAxLjcgNzEuNiAyNyAxNi43IDEuNS0uNi0yLjEtOTIuM3pNMTgyLjcgMzM0LjhsLTgyLjktNTEuNC0yLTg2LjMgMzcuOC0xNi4zLS43LTI5LjctNTguNyAyNS4zYy00LjMgMS45LTYuOSA1LjgtNi44IDEwLjRMNzEuNyAyODhjLjEgNC42IDIuOSA5LjEgNy4zIDExLjhsOTcuMiA2MC4zYzQgMi41IDguOCAzLjEgMTIuOSAxLjkuNC0uMS44LS4zIDEuMi0uNWw1Ny40LTI0LjctMjguNi0xNy43LTM2LjQgMTUuN3oiLz48cGF0aCBmaWxsPSIjZTEzZWFmIiBkPSJNNDE1LjkgMTM4LjNMMjkxLjMgNjFjLTQuNi0yLjgtMTAuMS0zLjYtMTQuOC0yLjEtLjUuMS0uOS4zLTEuNC41bC0xMjEuNiA1Mi40Yy00LjkgMi4xLTcuOSA2LjYtNy44IDExLjlsMy4xIDEyOS42Yy4xIDUuMyAzLjMgMTAuNCA4LjQgMTMuNUwyODEuOCAzNDRjNC42IDIuOCAxMC4xIDMuNiAxNC43IDIuMS41LS4xLjktLjMgMS40LS41bDEyMS42LTUyLjRjNC45LTIuMSA3LjktNi43IDcuOC0xMS45bC0zLTEyOS42Yy0uMS01LjEtMy4zLTEwLjMtOC40LTEzLjR6TTI4OS4zIDMxNS4yTDE4MSAyNDguMWwtMi43LTExMi43IDEwNS42LTQ1LjVMMzkyLjIgMTU3bDIuNyAxMTIuNy0xMDUuNiA0NS41eiIvPjwvc3ZnPg==
       mediatype: image/svg+xml
   relatedImages:
     - name: operator
-      image: quay.io/gateway-operators/agent-router-operator:v0.1.0
+      image: quay.io/gateway-operators/agent-router-operator:v0.1.1
     - name: ai-gateway-controller
       image: docker.io/envoyproxy/ai-gateway-controller:v1.2.0@sha256:4d663346354321a677c4e942017277f690d0d7715f8e3348a535db174679e4f8
     - name: ai-gateway-extproc
