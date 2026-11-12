@@ -34,7 +34,7 @@ metadata:
     operators.operatorframework.io/project_layout: helm.sdk.operatorframework.io/v1
     repository: https://github.com/ccangemi/agent-router
     support: Community
-    containerImage: ghcr.io/ccangemi/agent-router-operator:v0.1.0
+    containerImage: quay.io/gateway-operators/agent-router-operator:v0.1.0
   labels:
     operatorframework.io/arch.amd64: supported
     operatorframework.io/arch.arm64: supported
@@ -403,7 +403,7 @@ spec:
                         valueFrom:
                           fieldRef:
                             fieldPath: metadata.annotations['olm.targetNamespaces']
-                    image: ghcr.io/ccangemi/agent-router-operator:v0.1.0
+                    image: quay.io/gateway-operators/agent-router-operator:v0.1.0
                     livenessProbe:
                       httpGet:
                         path: /healthz
@@ -521,7 +521,7 @@ spec:
       mediatype: image/svg+xml
   relatedImages:
     - name: operator
-      image: ghcr.io/ccangemi/agent-router-operator:v0.1.0
+      image: quay.io/gateway-operators/agent-router-operator:v0.1.0
     - name: ai-gateway-controller
       image: docker.io/envoyproxy/ai-gateway-controller:v1.2.0@sha256:4d663346354321a677c4e942017277f690d0d7715f8e3348a535db174679e4f8
     - name: ai-gateway-extproc
