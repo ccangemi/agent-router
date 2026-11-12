@@ -4,7 +4,7 @@ description: "The chart of agent-router-operator: the upstream chart (charts/ai-
 type: application
 # The operator version (versions.env). hack/update-upstream.sh keeps it, the
 # appVersion and the dependency version in step with versions.env.
-version: 0.1.0
+version: 0.1.1
 appVersion: v1.2.0
 home: https://github.com/ccangemi/agent-router
 sources:
