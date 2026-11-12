@@ -123,7 +123,7 @@ names are fixed, so a second release would conflict.
 
 | Name in `relatedImages` | Image |
 |---|---|
-| `operator` | `ghcr.io/ccangemi/agent-router-operator` |
+| `operator` | `quay.io/gateway-operators/agent-router-operator` |
 | `ai-gateway-controller` | `docker.io/envoyproxy/ai-gateway-controller` |
 | `ai-gateway-extproc` | `docker.io/envoyproxy/ai-gateway-extproc` (the sidecar of the Envoy proxies) |
 
